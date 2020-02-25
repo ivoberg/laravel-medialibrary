@@ -45,7 +45,11 @@ class FileAdder
 
     protected string $fileName = '';
 
-    protected string $mediaName = '';
+    /** @var string */
+    protected $folderPath;
+
+    /** @var string */
+    protected $mediaName;
 
     protected string $diskName = '';
 
@@ -89,6 +93,8 @@ class FileAdder
             $this->setFileName(pathinfo($file, PATHINFO_BASENAME));
             $this->mediaName = pathinfo($file, PATHINFO_FILENAME);
 
+            $this->folderPath = str_replace(storage_path().'/app/public/', '', pathinfo($this->pathToFile, PATHINFO_DIRNAME));
+            $this->storagePath = $this->folderPath .'/'. $this->fileName;
             return $this;
         }
 
@@ -104,6 +110,8 @@ class FileAdder
             $this->pathToFile = $file->getPath().'/'.$file->getFilename();
             $this->setFileName($file->getClientOriginalName());
             $this->mediaName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+            $this->folderPath = str_replace(storage_path(), '', pathinfo($this->pathToFile, PATHINFO_DIRNAME));
+            $this->storagePath = $this->folderPath .'/'. $this->fileName;
 
             return $this;
         }
@@ -112,6 +120,8 @@ class FileAdder
             $this->pathToFile = $file->getPath().'/'.$file->getFilename();
             $this->setFileName(pathinfo($file->getFilename(), PATHINFO_BASENAME));
             $this->mediaName = pathinfo($file->getFilename(), PATHINFO_FILENAME);
+            $this->folderPath = str_replace(storage_path(), '', pathinfo($this->pathToFile, PATHINFO_DIRNAME));
+            $this->storagePath = $this->folderPath .'/'. $this->fileName;
 
             return $this;
         }
@@ -289,15 +299,20 @@ class FileAdder
             throw FileIsTooBig::create($this->pathToFile);
         }
 
-        $mediaClass = config('media-library.media_model');
-        /** @var \Spatie\MediaLibrary\MediaCollections\Models\Media $media */
-        $media = new $mediaClass();
+        $mediaClass = config('medialibrary.media_model');
+        /** @var \Spatie\MediaLibrary\Models\Media $media */
+        if(config('medialibrary.filesystem') === "Unisharp" && config('medialibrary.storage') === "storage") {
+            $media = $mediaClass::where('file_name',$this->storagePath)->first();
+        }
+        $media = isset($media) && $media ? $media : new $mediaClass();
 
         $media->name = $this->mediaName;
 
         $this->fileName = ($this->fileNameSanitizer)($this->fileName);
 
-        $media->file_name = $this->fileName;
+        $media->file_name = config('medialibrary.filesystem') === "Unisharp" && config('medialibrary.storage') === "storage" ?
+            $this->storagePath :
+            $this->fileName;
 
         $media->disk = $this->determineDiskName($diskName, $collectionName);
         $this->ensureDiskExists($media->disk);
@@ -413,9 +428,8 @@ class FileAdder
     {
         $this->guardAgainstDisallowedFileAdditions($media, $model);
 
-        $this->checkGenerateResponsiveImages($media);
 
-        $model->media()->save($media);
+        $model->media()->save($media,['model_story_id' => $model->story_id]);
 
         if ($fileAdder->file instanceof RemoteFile) {
             $this->filesystem->addRemote($fileAdder->file, $media, $fileAdder->fileName);
