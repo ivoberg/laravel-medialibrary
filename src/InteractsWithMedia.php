@@ -53,9 +53,14 @@ trait InteractsWithMedia
         });
     }
 
-    public function media(): MorphMany
+    /**
+     * Set the polymorphic relation.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\morphToMany
+     */
+    public function media()
     {
-        return $this->morphMany(config('media-library.media_model'), 'model');
+        return $this->morphToMany(config('medialibrary.media_model'), 'model', 'model_has_media')->wherePivot('model_story_id',$this->story_id);
     }
 
     /**

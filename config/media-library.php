@@ -2,11 +2,16 @@
 
 return [
 
+    /**
+     * External Filesystem
+     */
+    'filesystem' => 'Unisharp',
     /*
      * The disk on which to store added files and derived images by default. Choose
      * one or more of the disks you've configured in config/filesystems.php.
      */
     'disk_name' => env('MEDIA_DISK', 'public'),
+    'storage' => 'storage',
 
     /*
      * The maximum file size of an item in bytes.
@@ -168,7 +173,6 @@ return [
         'perform_conversions' => Spatie\MediaLibrary\Conversions\Jobs\PerformConversionsJob::class,
         'generate_responsive_images' => Spatie\MediaLibrary\ResponsiveImages\Jobs\GenerateResponsiveImagesJob::class,
     ],
-
     /*
      * When using the addMediaFromUrl method you may want to replace the default downloader.
      * This is particularly useful when the url of the image is behind a firewall and
@@ -176,4 +180,9 @@ return [
      */
     'media_downloader' => Spatie\MediaLibrary\Downloaders\DefaultDownloader::class,
 
+    'events' => [
+        'updating' => false,
+        'updated' => false,
+        'deleted' => false,
+    ]
 ];
