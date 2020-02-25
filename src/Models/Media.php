@@ -37,9 +37,9 @@ class Media extends Model implements Responsable, Htmlable
         'responsive_images' => 'array',
     ];
 
-    public function model(): MorphTo
+    public function modules($type): MorphToMany
     {
-        return $this->morphTo();
+        return $this->morphedByMany('App\Models\\'.$type, 'model', 'model_has_media', 'media_id', 'model_id')->withPivot('model_story_id');
     }
 
     /*

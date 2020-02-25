@@ -28,11 +28,12 @@ class Filesystem
 
     public function add(string $file, Media $media, ?string $targetFileName = null)
     {
-        $this->copyToMediaLibrary($file, $media, null, $targetFileName);
+        if(config('medialibrary.copy'))
+            $this->copyToMediaLibrary($file, $media, null, $targetFileName);
 
         event(new MediaHasBeenAdded($media));
-
-        app(FileManipulator::class)->createDerivedFiles($media);
+        if(config('medialibrary.copy'))
+            app(FileManipulator::class)->createDerivedFiles($media);
     }
 
     public function addRemote(RemoteFile $file, Media $media, ?string $targetFileName = null)

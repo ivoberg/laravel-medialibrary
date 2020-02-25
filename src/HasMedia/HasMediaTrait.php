@@ -56,11 +56,11 @@ trait HasMediaTrait
     /**
      * Set the polymorphic relation.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+     * @return \Illuminate\Database\Eloquent\Relations\morphToMany
      */
     public function media()
     {
-        return $this->morphMany(config('medialibrary.media_model'), 'model');
+        return $this->morphToMany(config('medialibrary.media_model'), 'model', 'model_has_media')->wherePivot('model_story_id',$this->story_id);
     }
 
     /**

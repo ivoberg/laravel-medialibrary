@@ -2,11 +2,16 @@
 
 return [
 
+    /**
+     * External Filesystem
+     */
+    'filesystem' => 'Unisharp',
     /*
      * The disk on which to store added files and derived images by default. Choose
      * one or more of the disks you've configured in config/filesystems.php.
      */
     'disk_name' => env('MEDIA_DISK', 'public'),
+    'storage' => 'storage',
 
     /*
      * The maximum file size of an item in bytes.
@@ -153,4 +158,9 @@ return [
         'perform_conversions' => Spatie\MediaLibrary\Jobs\PerformConversions::class,
         'generate_responsive_images' => Spatie\MediaLibrary\Jobs\GenerateResponsiveImages::class,
     ],
+    'events' => [
+        'updating' => false,
+        'updated' => false,
+        'deleted' => false,
+    ]
 ];
