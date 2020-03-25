@@ -35,7 +35,11 @@ class Media extends Model implements Responsable, Htmlable
 
     protected $table = 'media';
 
-    // private $attachableModuleTypes = [];
+    private $attachableModuleTypes = [
+        'CasinoGames' => 'casinoGames',
+        'StaticPages' => 'staticPages',
+        'Teasers' => 'teasers',
+        'Carousels' => 'carousels'];
 
     const TYPE_OTHER = 'other';
 
@@ -47,6 +51,7 @@ class Media extends Model implements Responsable, Htmlable
         'generated_conversions' => 'array',
         'responsive_images' => 'array',
     ];
+
     public function newCollection(array $models = [])
     {
         return new MediaCollection($models);
@@ -54,9 +59,11 @@ class Media extends Model implements Responsable, Htmlable
 
     public function modules($type): MorphToMany
     {
-        return $this->morphedByMany('App\Models\\'.$type, 'model', 'model_has_media', 'media_id', 'model_id');
+        return $this->morphedByMany('App\Models\\'.$type, 'model', 'model_has_media', 'media_id', 'model_id')->withPivot('model_story_id');
     }
-
+    /*
+     * Get the full url to a original media file.
+    */
     public function getFullUrl(string $conversionName = ''): string
     {
         return url($this->getUrl($conversionName));
