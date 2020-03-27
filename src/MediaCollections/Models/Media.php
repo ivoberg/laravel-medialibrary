@@ -37,11 +37,7 @@ class Media extends Model implements Responsable, Htmlable
 
     // private $attachableModuleTypes = [];
 
-    private $attachableModuleTypes = [
-        'CasinoGames' => 'casinoGames',
-        'StaticPages' => 'staticPages',
-        'Teasers' => 'teasers',
-        'Carousels' => 'carousels'];
+    // private $attachableModuleTypes = [];
 
     const TYPE_OTHER = 'other';
 
@@ -58,15 +54,15 @@ class Media extends Model implements Responsable, Htmlable
         return new MediaCollection($models);
     }
 
-    public function modules(): Array
-    {
-        $arr = [];
-        foreach ($this->attachableModuleTypes as $type => $val) {
-            $arr[$type] = $this->morphedByMany('App\Models\\'.$type, 'model', 'model_has_media', 'media_id', 'model_id')->withPivot('model_story_id')->get();
-        }
-        return $arr;
-    }
-    public function module($type): MorphToMany
+    // public function modules(): Array
+    // {
+    //     $arr = [];
+    //     foreach ($this->attachableModuleTypes as $type => $val) {
+    //         $arr[$type] = $this->morphedByMany('App\Models\\'.$type, 'model', 'model_has_media', 'media_id', 'model_id')->withPivot('model_story_id')->get();
+    //     }
+    //     return $arr;
+    // }
+    public function modules($type): MorphToMany
     {
         return $this->morphedByMany('App\Models\\'.$type, 'model', 'model_has_media', 'media_id', 'model_id')->withPivot('model_story_id');
     }
