@@ -37,11 +37,7 @@ class Media extends Model implements Responsable, Htmlable
 
     // private $attachableModuleTypes = [];
 
-    private $attachableModuleTypes = [
-        'CasinoGames' => 'casinoGames',
-        'StaticPages' => 'staticPages',
-        'Teasers' => 'teasers',
-        'Carousels' => 'carousels'];
+    // private $attachableModuleTypes = [];
 
     const TYPE_OTHER = 'other';
 
