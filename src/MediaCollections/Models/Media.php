@@ -35,11 +35,7 @@ class Media extends Model implements Responsable, Htmlable
 
     protected $table = 'media';
 
-    private $attachableModuleTypes = [
-        'CasinoGames' => 'casinoGames',
-        'StaticPages' => 'staticPages',
-        'Teasers' => 'teasers',
-        'Carousels' => 'carousels'];
+    // private $attachableModuleTypes = [];
 
     const TYPE_OTHER = 'other';
 
@@ -51,7 +47,6 @@ class Media extends Model implements Responsable, Htmlable
         'generated_conversions' => 'array',
         'responsive_images' => 'array',
     ];
-
     public function newCollection(array $models = [])
     {
         return new MediaCollection($models);
