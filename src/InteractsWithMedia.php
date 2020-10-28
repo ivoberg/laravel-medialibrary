@@ -3,6 +3,7 @@
 namespace Spatie\MediaLibrary;
 
 use DateTimeInterface;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
