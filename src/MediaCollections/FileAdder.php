@@ -302,9 +302,9 @@ class FileAdder
             throw FileIsTooBig::create($this->pathToFile);
         }
 
-        $mediaClass = config('medialibrary.media_model');
+        $mediaClass = config('media-library.media_model');
         /** @var \Spatie\MediaLibrary\Models\Media $media */
-        if (config('medialibrary.filesystem') === "Unisharp" && config('medialibrary.storage') === "storage") {
+        if (config('media-library.filesystem') === "Unisharp" && config('media-library.storage') === "storage") {
             $media = $mediaClass::where('file_name', $this->storagePath)->first();
         }
         $media = isset($media) && $media ? $media : new $mediaClass();
@@ -313,7 +313,7 @@ class FileAdder
 
         $this->fileName = ($this->fileNameSanitizer)($this->fileName);
 
-        $media->file_name = config('medialibrary.filesystem') === "Unisharp" && config('medialibrary.storage') === "storage" ?
+        $media->file_name = config('media-library.filesystem') === "Unisharp" && config('media-library.storage') === "storage" ?
             $this->storagePath :
             $this->fileName;
 
