@@ -57,7 +57,7 @@ trait InteractsWithMedia
      *
      * @return \Illuminate\Database\Eloquent\Relations\morphToMany
      */
-    public function media()
+    public function media() : MorphToMany
     {
         return $this->morphToMany(config('media-library.media_model'), 'model', 'model_has_media')->wherePivot('model_story_id', $this->story_id);
     }
