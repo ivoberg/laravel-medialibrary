@@ -59,7 +59,7 @@ trait InteractsWithMedia
      */
     public function media()
     {
-        return $this->morphToMany(config('medialibrary.media_model'), 'model', 'model_has_media')->wherePivot('model_story_id', $this->story_id);
+        return $this->morphToMany(config('media-library.media_model'), 'model', 'model_has_media')->wherePivot('model_story_id', $this->story_id);
     }
 
     /**
