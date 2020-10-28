@@ -3,7 +3,6 @@
 namespace Spatie\MediaLibrary;
 
 use DateTimeInterface;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\File;
 use Illuminate\Support\Arr;
@@ -60,7 +59,7 @@ trait InteractsWithMedia
      */
     public function media()
     {
-        return $this->morphToMany(config('medialibrary.media_model'), 'model', 'model_has_media')->wherePivot('model_story_id',$this->story_id);
+        return $this->morphToMany(config('medialibrary.media_model'), 'model', 'model_has_media')->wherePivot('model_story_id', $this->story_id);
     }
 
     /**

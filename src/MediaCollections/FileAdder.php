@@ -285,8 +285,8 @@ class FileAdder
 
         $mediaClass = config('medialibrary.media_model');
         /** @var \Spatie\MediaLibrary\Models\Media $media */
-        if(config('medialibrary.filesystem') === "Unisharp" && config('medialibrary.storage') === "storage") {
-            $media = $mediaClass::where('file_name',$this->storagePath)->first();
+        if (config('medialibrary.filesystem') === "Unisharp" && config('medialibrary.storage') === "storage") {
+            $media = $mediaClass::where('file_name', $this->storagePath)->first();
         }
         $media = isset($media) && $media ? $media : new $mediaClass();
 
@@ -407,7 +407,7 @@ class FileAdder
         $this->guardAgainstDisallowedFileAdditions($media, $model);
 
 
-        $model->media()->save($media,['model_story_id' => $model->story_id]);
+        $model->media()->save($media, ['model_story_id' => $model->story_id]);
 
         if ($fileAdder->file instanceof RemoteFile) {
             $this->filesystem->addRemote($fileAdder->file, $media, $fileAdder->fileName);
