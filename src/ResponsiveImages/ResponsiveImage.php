@@ -2,18 +2,16 @@
 
 namespace Spatie\MediaLibrary\ResponsiveImages;
 
-use Spatie\MediaLibrary\Filesystem\Filesystem;
-use Spatie\MediaLibrary\Models\Media;
-use Spatie\MediaLibrary\PathGenerator\PathGeneratorFactory;
-use Spatie\MediaLibrary\UrlGenerator\UrlGeneratorFactory;
+use Spatie\MediaLibrary\MediaCollections\Filesystem;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\MediaLibrary\Support\PathGenerator\PathGeneratorFactory;
+use Spatie\MediaLibrary\Support\UrlGenerator\UrlGeneratorFactory;
 
 class ResponsiveImage
 {
-    /** @var string */
-    public $fileName = '';
+    public string $fileName = '';
 
-    /** @var \Spatie\MediaLibrary\Models\Media */
-    public $media;
+    public Media $media;
 
     public static function register(Media $media, $fileName, $conversionName)
     {
@@ -46,7 +44,13 @@ class ResponsiveImage
 
     public function url(): string
     {
-        $urlGenerator = UrlGeneratorFactory::createForMedia($this->media);
+        $conversionName = '';
+
+        if ($this->generatedFor() !== 'media_library_original') {
+            $conversionName = $this->generatedFor();
+        }
+
+        $urlGenerator = UrlGeneratorFactory::createForMedia($this->media, $conversionName);
 
         return $urlGenerator->getResponsiveImagesDirectoryUrl().rawurlencode($this->fileName);
     }
@@ -96,7 +100,7 @@ class ResponsiveImage
         return $between;
     }
 
-    public function delete()
+    public function delete(): self
     {
         $pathGenerator = PathGeneratorFactory::create();
 

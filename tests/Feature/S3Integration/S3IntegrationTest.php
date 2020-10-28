@@ -5,16 +5,15 @@ namespace Spatie\MediaLibrary\Tests\Feature\S3Integration;
 use Aws\S3\S3Client;
 use Carbon\Carbon;
 use Illuminate\Contracts\Filesystem\Factory;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
-use Spatie\MediaLibrary\MediaStream;
+use Illuminate\Support\Str;
+use Spatie\MediaLibrary\Support\MediaStream;
 use Spatie\MediaLibrary\Tests\TestCase;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
 
 class S3IntegrationTest extends TestCase
 {
-    /** @var @string */
-    protected $s3BaseDirectory;
+    protected string $s3BaseDirectory;
 
     public function setUp(): void
     {
@@ -26,14 +25,14 @@ class S3IntegrationTest extends TestCase
 
         $this->s3BaseDirectory = self::getS3BaseTestDirectory();
 
-        $this->app['config']->set('medialibrary.path_generator', S3TestPathGenerator::class);
+        $this->app['config']->set('media-library.path_generator', S3TestPathGenerator::class);
     }
 
     public function tearDown(): void
     {
         $this->cleanUpS3();
 
-        $this->app['config']->set('medialibrary.path_generator', null);
+        $this->app['config']->set('media-library.path_generator', null);
 
         parent::tearDown();
     }
@@ -110,7 +109,7 @@ class S3IntegrationTest extends TestCase
             ->toMediaCollection('default', 's3_disk');
 
         $this->assertEquals(
-            $this->app['config']->get('medialibrary.s3.domain')."/{$this->s3BaseDirectory}/{$media->id}/test.jpg",
+            $this->s3BaseUrl()."/{$this->s3BaseDirectory}/{$media->id}/test.jpg",
             $media->getUrl()
         );
 
@@ -128,7 +127,7 @@ class S3IntegrationTest extends TestCase
             ->toMediaCollection('default', 's3_disk');
 
         $this->assertEquals(
-            $this->app['config']->get('medialibrary.s3.domain')."/{$this->s3BaseDirectory}/{$media->id}/conversions/test-thumb.jpg",
+            $this->s3BaseUrl()."/{$this->s3BaseDirectory}/{$media->id}/conversions/test-thumb.jpg",
             $media->getUrl('thumb')
         );
     }
@@ -142,7 +141,7 @@ class S3IntegrationTest extends TestCase
             ->toMediaCollection('default', 's3_disk');
 
         $this->assertEquals([
-            $this->app['config']->get('medialibrary.s3.domain')."/{$this->s3BaseDirectory}/{$media->id}/responsive-images/test___thumb_50_41.jpg",
+            $this->s3BaseUrl()."/{$this->s3BaseDirectory}/{$media->id}/responsive-images/test___thumb_50_41.jpg",
         ], $media->getResponsiveImageUrls('thumb'));
     }
 
@@ -156,6 +155,32 @@ class S3IntegrationTest extends TestCase
 
         $this->assertStringContainsString(
             "/{$this->s3BaseDirectory}/{$media->id}/test.jpg",
+            $media->getTemporaryUrl(Carbon::now()->addMinutes(5))
+        );
+
+        $this->assertEquals(
+            sha1(file_get_contents($this->getTestJpg())),
+            sha1(file_get_contents($media->getTemporaryUrl(Carbon::now()->addMinutes(5))))
+        );
+    }
+
+    /** @test */
+    public function it_retrieves_a_temporary_media_url_from_s3_when_s3_root_not_empty()
+    {
+        config()->set('filesystems.disks.s3_disk.root', 'test-root');
+
+        $media = $this->testModel
+            ->addMedia($this->getTestJpg())
+            ->preservingOriginal()
+            ->toMediaCollection('default', 's3_disk');
+
+        $this->assertStringContainsString(
+            "/{$this->s3BaseDirectory}/{$media->id}/test.jpg",
+            $media->getTemporaryUrl(Carbon::now()->addMinutes(5))
+        );
+
+        $this->assertStringNotContainsString(
+            '/test-root/test-root',
             $media->getTemporaryUrl(Carbon::now()->addMinutes(5))
         );
 
@@ -244,7 +269,7 @@ class S3IntegrationTest extends TestCase
 
         sleep(1);
 
-        Artisan::call('medialibrary:regenerate', [
+        $this->artisan('media-library:regenerate', [
             '--only-missing' => true,
         ]);
 
@@ -282,7 +307,7 @@ class S3IntegrationTest extends TestCase
 
         sleep(1);
 
-        Artisan::call('medialibrary:regenerate', [
+        $this->artisan('media-library:regenerate', [
             '--only-missing' => true,
             '--only' => 'thumb',
         ]);
@@ -343,11 +368,22 @@ class S3IntegrationTest extends TestCase
 
     public function canTestS3()
     {
-        return ! empty(getenv('AWS_KEY'));
+        return ! empty(getenv('AWS_ACCESS_KEY_ID'));
     }
 
     public static function getS3BaseTestDirectory(): string
     {
-        return md5(getenv('TRAVIS_BUILD_ID').app()->version().phpversion());
+        static $uuid = null;
+
+        if (is_null($uuid)) {
+            $uuid = Str::uuid();
+        }
+
+        return $uuid;
+    }
+
+    public function s3BaseUrl(): string
+    {
+        return 'https://laravel-medialibrary-tests.s3.eu-west-1.amazonaws.com';
     }
 }
