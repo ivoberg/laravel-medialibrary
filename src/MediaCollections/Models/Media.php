@@ -34,6 +34,8 @@ class Media extends Model implements Responsable, Htmlable
 
     // private $attachableModuleTypes = [];
 
+    // private $attachableModuleTypes = [];
+
     const TYPE_OTHER = 'other';
 
     protected $guarded = [];

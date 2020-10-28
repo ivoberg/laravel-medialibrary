@@ -173,6 +173,7 @@ return [
         'perform_conversions' => Spatie\MediaLibrary\Conversions\Jobs\PerformConversionsJob::class,
         'generate_responsive_images' => Spatie\MediaLibrary\ResponsiveImages\Jobs\GenerateResponsiveImagesJob::class,
     ],
+
     /*
      * When using the addMediaFromUrl method you may want to replace the default downloader.
      * This is particularly useful when the url of the image is behind a firewall and
