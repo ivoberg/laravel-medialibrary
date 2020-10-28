@@ -27,12 +27,12 @@ class Filesystem
 
     public function add(string $file, Media $media, ?string $targetFileName = null): void
     {
-        if (config('medialibrary.copy')) {
+        if (config('media-library.copy')) {
             $this->copyToMediaLibrary($file, $media, null, $targetFileName);
         }
 
         event(new MediaHasBeenAdded($media));
-        if (config('medialibrary.copy')) {
+        if (config('media-library.copy')) {
             app(FileManipulator::class)->createDerivedFiles($media);
         }
     }

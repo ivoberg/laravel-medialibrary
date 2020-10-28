@@ -34,7 +34,7 @@ class MediaLibraryServiceProvider extends ServiceProvider
             __DIR__.'/../resources/views' => resource_path('views/vendor/medialibrary'),
         ], 'views');
 
-        $mediaClass = config('medialibrary.media_model');
+        $mediaClass = config('media-library.media_model');
 
         $mediaClass::observe(new MediaObserver());
 
