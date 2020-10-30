@@ -7,7 +7,8 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Spatie\MediaLibrary\Conversions\Conversion;
@@ -34,10 +35,6 @@ class Media extends Model implements Responsable, Htmlable
         HasUuid;
 
     protected $table = 'media';
-
-    // private $attachableModuleTypes = [];
-
-    // private $attachableModuleTypes = [];
 
     const TYPE_OTHER = 'other';
 
