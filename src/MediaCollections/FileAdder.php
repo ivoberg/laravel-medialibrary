@@ -18,6 +18,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\ResponsiveImages\Jobs\GenerateResponsiveImagesJob;
 use Spatie\MediaLibrary\Support\File;
 use Spatie\MediaLibrary\Support\RemoteFile;
+use Spatie\MediaLibraryPro\Models\TemporaryUpload;
 use Symfony\Component\HttpFoundation\File\File as SymfonyFile;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -62,6 +63,8 @@ class FileAdder
     protected bool $generateResponsiveImages = false;
 
     protected array $customHeaders = [];
+
+    public ?int $order = null;
 
     public function __construct(Filesystem $fileSystem)
     {
@@ -126,6 +129,10 @@ class FileAdder
             return $this;
         }
 
+        if ($file instanceof TemporaryUpload) {
+            return $this;
+        }
+
         throw UnknownType::create();
     }
 
@@ -144,6 +151,13 @@ class FileAdder
     public function setName(string $name): self
     {
         $this->mediaName = $name;
+
+        return $this;
+    }
+
+    public function setOrder(int $order): self
+    {
+        $this->order = $order;
 
         return $this;
     }
@@ -254,6 +268,7 @@ class FileAdder
         $media->size = $storage->size($this->pathToFile);
         $media->custom_properties = $this->customProperties;
 
+        $media->generated_conversions = [];
         $media->responsive_images = [];
 
         $media->manipulations = $this->manipulations;
@@ -273,6 +288,10 @@ class FileAdder
     {
         if ($this->file instanceof RemoteFile) {
             return $this->toMediaCollectionFromRemote($collectionName, $diskName);
+        }
+
+        if ($this->file instanceof TemporaryUpload) {
+            return $this->toMediaCollectionFromTemporaryUpload($collectionName, $diskName);
         }
 
         if (! is_file($this->pathToFile)) {
@@ -308,8 +327,14 @@ class FileAdder
 
         $media->mime_type = File::getMimeType($this->pathToFile);
         $media->size = filesize($this->pathToFile);
+
+        if (! is_null($this->order)) {
+            $media->order_column = $this->order;
+        }
+
         $media->custom_properties = $this->customProperties;
 
+        $media->generated_conversions = [];
         $media->responsive_images = [];
 
         $media->manipulations = $this->manipulations;
@@ -476,5 +501,24 @@ class FileAdder
         if ($collection) {
             $this->withResponsiveImages();
         }
+    }
+
+    protected function toMediaCollectionFromTemporaryUpload(string $collectionName, string $diskName): Media
+    {
+        /** @var TemporaryUpload $temporaryUpload */
+        $temporaryUpload = $this->file;
+
+        $media = $temporaryUpload->getFirstMedia();
+
+        $media->name = $this->mediaName;
+        $media->custom_properties = $this->customProperties;
+
+        if (! is_null($this->order)) {
+            $media->order_column = $this->order;
+        }
+
+        $media->save();
+
+        return $temporaryUpload->moveMedia($this->subject, $collectionName, $diskName);
     }
 }

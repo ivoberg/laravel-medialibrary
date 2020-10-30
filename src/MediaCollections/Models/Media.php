@@ -5,8 +5,10 @@ namespace Spatie\MediaLibrary\MediaCollections\Models;
 use DateTimeInterface;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Responsable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Spatie\MediaLibrary\Conversions\Conversion;
@@ -21,8 +23,10 @@ use Spatie\MediaLibrary\MediaCollections\Models\Concerns\HasUuid;
 use Spatie\MediaLibrary\MediaCollections\Models\Concerns\IsSorted;
 use Spatie\MediaLibrary\ResponsiveImages\RegisteredResponsiveImages;
 use Spatie\MediaLibrary\Support\File;
+use Spatie\MediaLibrary\Support\MediaLibraryPro;
 use Spatie\MediaLibrary\Support\TemporaryDirectory;
 use Spatie\MediaLibrary\Support\UrlGenerator\UrlGeneratorFactory;
+use Spatie\MediaLibraryPro\Models\TemporaryUpload;
 
 class Media extends Model implements Responsable, Htmlable
 {
@@ -32,10 +36,6 @@ class Media extends Model implements Responsable, Htmlable
 
     protected $table = 'media';
 
-    // private $attachableModuleTypes = [];
-
-    // private $attachableModuleTypes = [];
-
     const TYPE_OTHER = 'other';
 
     protected $guarded = [];
@@ -43,27 +43,20 @@ class Media extends Model implements Responsable, Htmlable
     protected $casts = [
         'manipulations' => 'array',
         'custom_properties' => 'array',
+        'generated_conversions' => 'array',
         'responsive_images' => 'array',
     ];
+
     public function newCollection(array $models = [])
     {
         return new MediaCollection($models);
     }
-    // public function modules(): Array
-    // {
-    //     $arr = [];
-    //     foreach ($this->attachableModuleTypes as $type => $val) {
-    //         $arr[$type] = $this->morphedByMany('App\Models\\'.$type, 'model', 'model_has_media', 'media_id', 'model_id')->withPivot('model_story_id')->get();
-    //     }
-    //     return $arr;
-    // }
-    public function modules($type): MorphToMany
+
+    public function model(): MorphTo
     {
-        return $this->morphedByMany('App\Models\\'.$type, 'model', 'model_has_media', 'media_id', 'model_id')->withPivot('model_story_id');
+        return $this->morphTo();
     }
-    /*
-     * Get the full url to a original media file.
-    */
+
     public function getFullUrl(string $conversionName = ''): string
     {
         return url($this->getUrl($conversionName));
@@ -194,6 +187,38 @@ class Media extends Model implements Responsable, Htmlable
         return $conversions->map(fn (Conversion $conversion) => $conversion->getName())->toArray();
     }
 
+    public function getGeneratedConversions(): Collection
+    {
+        return collect($this->generated_conversions ?? []);
+    }
+
+
+    public function markAsConversionGenerated(string $conversionName): self
+    {
+        $generatedConversions = $this->generated_conversions;
+
+        Arr::set($generatedConversions, $conversionName, true);
+
+        $this->generated_conversions = $generatedConversions;
+
+        $this->save();
+
+        return $this;
+    }
+
+    public function markAsConversionNotGenerated(string $conversionName): self
+    {
+        $generatedConversions = $this->generated_conversions;
+
+        Arr::set($generatedConversions, $conversionName, false);
+
+        $this->generated_conversions = $generatedConversions;
+
+        $this->save();
+
+        return $this;
+    }
+
     public function hasGeneratedConversion(string $conversionName): bool
     {
         $generatedConversions = $this->getGeneratedConversions();
@@ -201,19 +226,6 @@ class Media extends Model implements Responsable, Htmlable
         return $generatedConversions[$conversionName] ?? false;
     }
 
-    public function markAsConversionGenerated(string $conversionName, bool $generated): self
-    {
-        $this->setCustomProperty("generated_conversions.{$conversionName}", $generated);
-
-        $this->save();
-
-        return $this;
-    }
-
-    public function getGeneratedConversions(): Collection
-    {
-        return collect($this->getCustomProperty('generated_conversions', []));
-    }
 
     public function toResponse($request)
     {
@@ -221,7 +233,7 @@ class Media extends Model implements Responsable, Htmlable
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
             'Content-Type' => $this->mime_type,
             'Content-Length' => $this->size,
-            'Content-Disposition' => 'attachment; filename="'.$this->file_name.'"',
+            'Content-Disposition' => 'attachment; filename="' . $this->file_name . '"',
             'Pragma' => 'public',
         ];
 
@@ -264,7 +276,7 @@ class Media extends Model implements Responsable, Htmlable
     {
         $temporaryDirectory = TemporaryDirectory::create();
 
-        $temporaryFile = $temporaryDirectory->path('/').DIRECTORY_SEPARATOR.$this->file_name;
+        $temporaryFile = $temporaryDirectory->path('/') . DIRECTORY_SEPARATOR . $this->file_name;
 
         /** @var \Spatie\MediaLibrary\MediaCollections\Filesystem $filesystem */
         $filesystem = app(Filesystem::class);
@@ -274,6 +286,7 @@ class Media extends Model implements Responsable, Htmlable
         $newMedia = $model
             ->addMedia($temporaryFile)
             ->usingName($this->name)
+            ->setOrder($this->order_column)
             ->withCustomProperties($this->custom_properties)
             ->toMediaCollection($collectionName, $diskName);
 
@@ -310,5 +323,26 @@ class Media extends Model implements Responsable, Htmlable
     public function __invoke(...$arguments): HtmlableMedia
     {
         return $this->img(...$arguments);
+    }
+
+    public function temporaryUpload(): BelongsTo
+    {
+        MediaLibraryPro::ensureInstalled();
+
+        return $this->belongsTo(TemporaryUpload::class);
+    }
+
+    public static function findWithTemporaryUploadInCurrentSession(array $uuids)
+    {
+        MediaLibraryPro::ensureInstalled();
+
+        return static::query()
+            ->whereIn('uuid', $uuids)
+            ->whereHasMorph(
+                'model',
+                [TemporaryUpload::class],
+                fn (Builder $builder) => $builder->where('session_id', session()->getId())
+            )
+            ->get();
     }
 }
