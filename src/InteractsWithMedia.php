@@ -26,7 +26,6 @@ use Spatie\MediaLibrary\MediaCollections\MediaRepository;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\Support\MediaLibraryPro;
 use Spatie\MediaLibraryPro\PendingMediaLibraryRequestHandler;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 trait InteractsWithMedia
 {
