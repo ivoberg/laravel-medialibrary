@@ -291,7 +291,7 @@ class FileAdder
         }
 
         if ($this->file instanceof TemporaryUpload) {
-            return $this->toMediaCollectionFromTemporaryUpload($collectionName, $diskName);
+            return $this->toMediaCollectionFromTemporaryUpload($collectionName, $diskName, $this->fileName);
         }
 
         if (! is_file($this->pathToFile)) {
@@ -503,7 +503,7 @@ class FileAdder
         }
     }
 
-    protected function toMediaCollectionFromTemporaryUpload(string $collectionName, string $diskName): Media
+    protected function toMediaCollectionFromTemporaryUpload(string $collectionName, string $diskName, string $fileName = ''): Media
     {
         /** @var TemporaryUpload $temporaryUpload */
         $temporaryUpload = $this->file;
@@ -519,6 +519,6 @@ class FileAdder
 
         $media->save();
 
-        return $temporaryUpload->moveMedia($this->subject, $collectionName, $diskName);
+        return $temporaryUpload->moveMedia($this->subject, $collectionName, $diskName, $fileName);
     }
 }
