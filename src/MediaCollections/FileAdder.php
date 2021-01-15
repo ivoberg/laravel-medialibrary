@@ -136,9 +136,9 @@ class FileAdder
         throw UnknownType::create();
     }
 
-    public function preservingOriginal(): self
+    public function preservingOriginal(bool $preserveOriginal = true): self
     {
-        $this->preserveOriginal = true;
+        $this->preserveOriginal = $preserveOriginal;
 
         return $this;
     }
