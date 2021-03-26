@@ -59,11 +59,11 @@ trait InteractsWithMedia
     /**
      * Set the polymorphic relation.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\morphToMany
+     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
      */
-    public function media() : MorphToMany
+    public function media(): MorphToMany
     {
-        return $this->morphToMany(config('media-library.media_model'), 'model', 'model_has_media')->wherePivot('model_story_id', $this->story_id);
+        return $this->morphToMany(config('media-library.media_model'), 'model', 'model_has_media')->wherePivot('model_domain_id', $this->domain_id);
     }
 
     /**

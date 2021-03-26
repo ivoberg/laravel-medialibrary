@@ -13,17 +13,16 @@ class CreateModelHasMediaTable extends Migration
     {
         Schema::create('model_has_media', function (Blueprint $table) {
             $table->increments('id');
-            $table->unsignedInteger('media_id');
+            $table->unsignedBigInteger('media_id');
             $table->unsignedBigInteger('model_id');
-            $table->unsignedInteger('model_story_id');
-            $table->string('model_type');
+            $table->unsignedInteger('model_domain_id');
             $table->foreign('media_id')
                 ->references('id')
                 ->on('media')
                 ->onDelete('cascade');
         });
         Schema::table('model_has_media', function (Blueprint $table) {
-            DB::statement('ALTER TABLE  `model_has_media` DROP PRIMARY KEY , ADD PRIMARY KEY (  `id` ,  `media_id` ,  `model_id`, `model_type`, `model_story_id`) ;');
+            DB::statement('ALTER TABLE  `model_has_media` DROP PRIMARY KEY , ADD PRIMARY KEY (  `id` ,  `media_id` ,  `model_id`, `model_domain_id`) ;');
             // $table->dropPrimary( ['id']);
             // $table->primary(['id', 'media_id' , 'model_id']);
         });

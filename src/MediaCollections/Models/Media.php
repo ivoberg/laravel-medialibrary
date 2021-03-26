@@ -7,6 +7,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -37,8 +38,6 @@ class Media extends Model implements Responsable, Htmlable
 
     // private $attachableModuleTypes = [];
 
-    // private $attachableModuleTypes = [];
-
     const TYPE_OTHER = 'other';
 
     protected $guarded = [];
@@ -53,21 +52,17 @@ class Media extends Model implements Responsable, Htmlable
     {
         return new MediaCollection($models);
     }
-    // public function modules(): Array
-    // {
-    //     $arr = [];
-    //     foreach ($this->attachableModuleTypes as $type => $val) {
-    //         $arr[$type] = $this->morphedByMany('App\Models\\'.$type, 'model', 'model_has_media', 'media_id', 'model_id')->withPivot('model_story_id')->get();
-    //     }
-    //     return $arr;
-    // }
+
+    public function model(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
     public function modules($type): MorphToMany
     {
-        return $this->morphedByMany('App\Models\\'.$type, 'model', 'model_has_media', 'media_id', 'model_id')->withPivot('model_story_id');
+        return $this->morphedByMany('App\Models\\'.$type, 'model', 'model_has_media', 'media_id', 'model_id');
     }
-    /*
-     * Get the full url to a original media file.
-    */
+
     public function getFullUrl(string $conversionName = ''): string
     {
         return url($this->getUrl($conversionName));
