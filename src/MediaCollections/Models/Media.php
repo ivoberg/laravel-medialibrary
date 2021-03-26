@@ -36,8 +36,6 @@ class Media extends Model implements Responsable, Htmlable
 
     protected $table = 'media';
 
-    // private $attachableModuleTypes = [];
-
     const TYPE_OTHER = 'other';
 
     protected $guarded = [];
@@ -51,10 +49,6 @@ class Media extends Model implements Responsable, Htmlable
     public function newCollection(array $models = [])
     {
         return new MediaCollection($models);
-    }
-
-    {
-        return $this->morphedByMany('App\Models\\'.$type, 'model', 'model_has_media', 'media_id', 'model_id')->withPivot('model_story_id');
     }
 
     public function modules($type): MorphToMany

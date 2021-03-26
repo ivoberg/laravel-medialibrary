@@ -18,17 +18,7 @@ class MediaLibraryServiceProvider extends ServiceProvider
     {
         $this->registerPublishables();
 
-        if (! class_exists('CreateModelHasMediaTable')) {
-            $this->publishes([
-                __DIR__.'/../database/migrations/create_model_has_media_table.php.stub' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_model_has_media_table.php'),
-            ], 'migrations');
-        }
-
-        $this->publishes([
-            __DIR__.'/../resources/views' => resource_path('views/vendor/medialibrary'),
-        ], 'views');
-
-        $mediaClass = config('medialibrary.media_model');
+        $mediaClass = config('media-library.media_model');
 
         $mediaClass::observe(new MediaObserver());
 
