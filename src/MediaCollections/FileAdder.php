@@ -45,11 +45,9 @@ class FileAdder
 
     protected string $fileName = '';
 
-    /** @var string */
-    protected $folderPath;
+    protected string $mediaName = '';
 
-    /** @var string */
-    protected $mediaName;
+    protected $folderPath;
 
     protected string $diskName = '';
 
