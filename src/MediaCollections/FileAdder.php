@@ -45,9 +45,11 @@ class FileAdder
 
     protected string $fileName = '';
 
-    protected string $mediaName = '';
     /** @var string */
     protected $folderPath;
+
+    /** @var string */
+    protected $mediaName;
 
     protected string $diskName = '';
 
@@ -426,8 +428,7 @@ class FileAdder
     {
         $this->guardAgainstDisallowedFileAdditions($media, $model);
 
-        $morph = $model->media();
-        $morph->save($media, ['model_domain_id' => $model->domain_id]);
+        $model->media()->save($media, ['model_domain_id' => $model->domain_id]);
 
         if ($fileAdder->file instanceof RemoteFile) {
             $this->filesystem->addRemote($fileAdder->file, $media, $fileAdder->fileName);
