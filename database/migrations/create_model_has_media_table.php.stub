@@ -1,0 +1,38 @@
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class CreateModelHasMediaTable extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up()
+    {
+        Schema::create('model_has_media', function (Blueprint $table) {
+            $table->increments('id');
+            $table->unsignedBigInteger('media_id');
+            $table->unsignedBigInteger('model_id');
+            $table->unsignedInteger('model_domain_id');
+            $table->foreign('media_id')
+                ->references('id')
+                ->on('media')
+                ->onDelete('cascade');
+        });
+        Schema::table('model_has_media', function (Blueprint $table) {
+            DB::statement('ALTER TABLE  `model_has_media` DROP PRIMARY KEY , ADD PRIMARY KEY (  `id` ,  `media_id` ,  `model_id`, `model_domain_id`) ;');
+            // $table->dropPrimary( ['id']);
+            // $table->primary(['id', 'media_id' , 'model_id']);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down()
+    {
+        Schema::dropIfExists('model_has_media');
+    }
+}
