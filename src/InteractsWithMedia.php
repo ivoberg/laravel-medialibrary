@@ -3,7 +3,7 @@
 namespace Spatie\MediaLibrary;
 
 use DateTimeInterface;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
@@ -56,9 +56,14 @@ trait InteractsWithMedia
         });
     }
 
-    public function media(): MorphMany
+    /**
+     * Set the polymorphic relation.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
+     */
+    public function media(): MorphToMany
     {
-        return $this->morphMany(config('media-library.media_model'), 'model');
+        return $this->morphToMany(config('media-library.media_model'), 'model', 'model_has_media')->wherePivot('model_domain_id', $this->domain_id);
     }
 
     /**
